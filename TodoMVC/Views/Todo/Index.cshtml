@@ -9,6 +9,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Template • TodoMVC</title>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
     <link href="~/Content/Todo/base.css" rel="stylesheet" />
     <link href="~/Content/Todo/index.css" rel="stylesheet" />
 </head>
@@ -73,7 +74,7 @@
     </footer>
     <script>
         $(function () {
-
+            getData;
 
 
 
@@ -85,17 +86,18 @@
             $.ajax({
                 url: url,
                 success: function (result) {
+                    var data = JSON.parse(result);
                     RefreshList(result);
                 }
             });
-        })(@Url.Action("GetTodos", "Todo"));
+        })('@Url.Action("GetTodos", "Todo")');
 
         function RefreshList(data) {
-            $("todoList").html();
+            var todoList = $("todoList");
+            todoList.html();
             for (var item in data) {
-
+                todoList.append();
             }
-            $("todoList").append();
         }
     </script>
 </body>

@@ -12,6 +12,15 @@ namespace TodoMVC.Services
         {
             using (TodoContext _db = new TodoContext())
             {
+                return new List<Todo>
+                {
+                    new Todo { Content = "測試資料1", IsComplete = false },
+                    new Todo { Content = "測試資料2", IsComplete = false },
+                    new Todo { Content = "測試資料3", IsComplete = false },
+                    new Todo { Content = "測試資料4", IsComplete = false },
+                };
+
+
                 return _db.Todos.AsEnumerable();
             }
         }

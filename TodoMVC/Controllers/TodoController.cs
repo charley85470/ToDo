@@ -21,7 +21,7 @@ namespace TodoMVC.Controllers
         public ActionResult GetTodos()
         {
             var data = todoService.GetTodos();
-            return Json(data);
+            return Json(data, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult Add()
