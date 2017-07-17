@@ -18,9 +18,9 @@ namespace TodoMVC.Controllers
             return View();
         }
 
-        public ActionResult GetTodos()
+        public ActionResult GetTodos(bool? status)
         {
-            var data = todoService.GetTodos();
+            var data = todoService.GetTodos(status);
             return Json(data, JsonRequestBehavior.AllowGet);
         }
 
@@ -34,9 +34,11 @@ namespace TodoMVC.Controllers
             return View();
         }
 
-        public ActionResult Delete()
+        public ActionResult Delete(int _id)
         {
-            return View();
+
+            var data = todoService.GetTodos(null);
+            return Json(data, JsonRequestBehavior.AllowGet);
         }
     }
 }
