@@ -15,6 +15,7 @@
         public TodoContext()
             : base("name=Todo")
         {
+            Database.SetInitializer(new TodoContextInitializer());
         }
 
         // 針對您要包含在模型中的每種實體類型新增 DbSet。如需有關設定和使用

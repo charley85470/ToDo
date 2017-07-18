@@ -12,14 +12,6 @@ namespace TodoMVC.Services
         {
             using (TodoContext _db = new TodoContext())
             {
-                //var list = new List<Todo>
-                //{
-                //    new Todo { _id = 0, Content = "測試資料1", IsComplete = true },
-                //    new Todo { _id = 1, Content = "測試資料2", IsComplete = false },
-                //    new Todo { _id = 2, Content = "測試資料3", IsComplete = true },
-                //    new Todo { _id = 3, Content = "測試資料4", IsComplete = false },
-                //};
-
                 return _db.Todos.Select(x => x).ToList();
             }
         }

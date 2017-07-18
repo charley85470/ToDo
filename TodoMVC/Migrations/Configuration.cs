@@ -1,5 +1,6 @@
 namespace TodoMVC.Migrations
 {
+    using Models.TodoDB;
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;

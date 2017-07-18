@@ -26,7 +26,7 @@
             <ul id="todoList" class="todo-list">
                 <!-- These are here just to show the structure of the list items -->
                 <!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
-                <li class="completed">
+                @*<li class="completed">
                     <div class="view">
                         <input class="toggle" type="checkbox" checked>
                         <label>Taste JavaScript</label>
@@ -41,7 +41,7 @@
                         <button class="destroy"></button>
                     </div>
                     <input class="edit" value="Rule the web">
-                </li>
+                </li>*@
             </ul>
         </section>
         <!-- This footer should hidden by default and shown when there are todos -->
@@ -74,8 +74,10 @@
     </footer>
     <script>
         $(function () {
+            // 取得Todo
             GetTodos();
 
+            // 完成Todo
             $(document).on("change", "input[type=checkbox][class=toggle]", function () {
                 var checked = $(this).prop("checked");
                 var _id = $(this).data("id");
@@ -90,10 +92,12 @@
                 RefreshList(list);
             });
 
+            // 移除Todo
             $(document).on("click", "button[class=destroy]", function () {
                 Remove($(this).data("id"));
             })
 
+            // 全部完成
             $("input[class=toggle-all]").on("click", function () {
                 var checked = $(this).prop("checked");
 
@@ -114,6 +118,7 @@
                 RefreshList(list);
             });
 
+            // 新建Todo
             $("input[class=new-todo]").on("keypress", function (e) {
                 code = (e.keyCode ? e.keyCode : e.which);
 
@@ -124,17 +129,22 @@
                 }
             });
 
+            // 移除已完成Todo
             $("button[class=clear-completed]").on("click", RemoveCompleted);
 
+            // 篩選Todo狀態
             $("ul[class=filters] li a").on("click", function () {
                 filter($(this).data("type"));
                 $(this).parents("ul").find("a").removeClass("selected");
                 $(this).addClass("selected");
             });
 
+            // 編輯Todo
             $(document).on("dblclick", "li", function () {
                 var _id = $(this).data("id");
                 $(this).toggleClass("editing");
+
+                // Focus Out 完成編輯
                 $(this).find("input[class=edit]").on("focusout", function () {
                     var list = JSON.parse(localStorage["todos"]);
                     var item = list.find(x => x._id === _id);
@@ -146,6 +156,7 @@
             });
         });
 
+        // 取得 Todo List 並置放到localStorage
         var getTodosUrl = '@Url.Action("GetTodos", "Todo")';
         function GetTodos() {
             $.ajax({
@@ -159,16 +170,20 @@
             });
         };
 
+        // 篩選Todo狀態
         function filter(type) {
             var list = JSON.parse(localStorage['todos']);
             switch (type) {
                 case 'all':
+                    // 所有狀態
                     RefreshList(list);
                     break;
                 case 'active':
+                    // 進行中
                     RefreshList(list.filter(x => x.IsComplete === false));
                     break;
                 case 'completed':
+                    // 已完成
                     RefreshList(list.filter(x => x.IsComplete === true));
                     break;
                 default:
@@ -176,6 +191,7 @@
             }
         }
 
+        // 重新整理 Todo List
         function RefreshList(data) {
             if (localStorage["todos"] !== null && localStorage["todos"] !== undefined) {
                 var todoList = $("#todoList");
@@ -199,9 +215,11 @@
             RefreshElement();
         }
 
+        // 重新整理 各按鈕狀態
         function RefreshElement() {
             var data = JSON.parse(localStorage["todos"]);
 
+            // 完成項目個數顯示
             $("span[class=todo-count] strong").text(data.filter(x => x.IsComplete === true).length);
             if (data.filter(x=>x.IsComplete === false).length > 0) {
                 $("input[type=checkbox][class=toggle-all]").removeProp("checked");
@@ -210,6 +228,7 @@
                 $("input[type=checkbox][class=toggle-all]").prop("checked", true);
             }
 
+            // 移除所有已完成項目顯示狀態
             if (data.filter(x=>x.IsComplete === true).length > 0) {
                 $("button[class=clear-completed]").removeProp("hidden");
             }
@@ -218,6 +237,7 @@
             }
         }
 
+        // 新增 Todo
         var addUrl = '@Url.Action("Add", "Todo")';
         function Add(value) {
             $.ajax({
@@ -229,27 +249,7 @@
             });
         }
 
-        var removeUrl = '@Url.Action("Delete", "Todo")';
-        function Remove(_id) {
-            $.ajax({
-                url: removeUrl,
-                data: { _id: _id },
-                success: function (result) {
-                    GetTodos();
-                }
-            });
-        }
-
-        var removeCompletedUrl = '@Url.Action("DeleteCompleted", "Todo")';
-        var RemoveCompleted = function () {
-            $.ajax({
-                url: removeCompletedUrl,
-                success: function (result) {
-                    GetTodos();
-                }
-            });
-        };
-
+        // 編輯 Todo
         var editUrl = '@Url.Action("Edit", "Todo")';
         function Edit() {
             $.ajax({
@@ -262,6 +262,29 @@
                 }
             });
         }
+
+        // 移除 Todo
+        var removeUrl = '@Url.Action("Delete", "Todo")';
+        function Remove(_id) {
+            $.ajax({
+                url: removeUrl,
+                data: { _id: _id },
+                success: function (result) {
+                    GetTodos();
+                }
+            });
+        }
+
+        // 移除已完成的 Todo
+        var removeCompletedUrl = '@Url.Action("DeleteCompleted", "Todo")';
+        var RemoveCompleted = function () {
+            $.ajax({
+                url: removeCompletedUrl,
+                success: function (result) {
+                    GetTodos();
+                }
+            });
+        };
     </script>
 </body>
 </html>
