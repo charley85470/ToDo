@@ -51,13 +51,13 @@
             <!-- Remove this if you don't implement routing -->
             <ul class="filters">
                 <li>
-                    <a class="selected" href="#/" onclick="GetData(getDataUrl, null)">All</a>
+                    <a class="selected" href="#/" data-type="all">All</a>
                 </li>
                 <li>
-                    <a href="#/active" onclick="GetData(getDataUrl, false)">Active</a>
+                    <a href="#/active" data-type="active">Active</a>
                 </li>
                 <li>
-                    <a href="#/completed" onclick="GetData(getDataUrl, true)">Completed</a>
+                    <a href="#/completed" data-type="completed">Completed</a>
                 </li>
             </ul>
             <!-- Hidden if no completed items are left ↓ -->
@@ -69,43 +69,163 @@
         <!-- Remove the below line ↓ -->
         <p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
         <!-- Change this out with your name and url ↓ -->
-        <p>Created by <a href="http://todomvc.com">you</a></p>
+        <p>Created by <a href="https://github.com/charley85470/ToDo">Charley Chang</a></p>
         <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
     </footer>
     <script>
         $(function () {
-            GetData(getDataUrl, null);
+            GetTodos();
 
+            $(document).on("change", "input[type=checkbox][class=toggle]", function () {
+                var checked = $(this).prop("checked");
+                var _id = $(this).data("id");
 
+                var list = JSON.parse(localStorage["todos"]);
+                var item = list.find(x => x._id === _id);
+
+                item.IsComplete = checked;
+                localStorage["todos"] = JSON.stringify(list);
+
+                Edit();
+                RefreshList(list);
+            });
+
+            $(document).on("click", "button[class=destroy]", function () {
+                Remove($(this).data("id"));
+            })
+
+            $("input[class=toggle-all]").on("click", function () {
+                var checked = $(this).prop("checked");
+
+                var list = JSON.parse(localStorage["todos"]);
+                list.forEach(function (value, index) {
+                    if (checked) {
+                        value.IsComplete = true;
+                    }
+                    else {
+                        value.IsComplete = false;
+                    }
+                });
+
+                localStorage["todos"] = JSON.stringify(list);
+
+                Edit();
+
+                RefreshList(list);
+            });
+
+            $("input[class=new-todo]").on("keypress", function (e) {
+                code = (e.keyCode ? e.keyCode : e.which);
+
+                if (code == 13) {
+                    //alert($(this).val());
+                    Add($(this).val());
+                    $(this).val("");
+                }
+            });
+
+            $("button[class=clear-completed]").on("click", RemoveCompleted);
+
+            $("ul[class=filters] li a").on("click", function () {
+                filter($(this).data("type"));
+                $(this).parents("ul").find("a").removeClass("selected");
+                $(this).addClass("selected");
+            });
+
+            $(document).on("dblclick", "li", function () {
+                var _id = $(this).data("id");
+                $(this).toggleClass("editing");
+                $(this).find("input[class=edit]").on("focusout", function () {
+                    var list = JSON.parse(localStorage["todos"]);
+                    var item = list.find(x => x._id === _id);
+                    item.Content = $(this).val();
+                    localStorage["todos"] = JSON.stringify(list);
+                    Edit();
+                    RefreshList(list);
+                });
+            });
         });
 
-        var getDataUrl = '@Url.Action("GetTodos", "Todo")';
-        function GetData(url, status) {
+        var getTodosUrl = '@Url.Action("GetTodos", "Todo")';
+        function GetTodos() {
             $.ajax({
-                url: url,
-                data: { status: status },
+                url: getTodosUrl,
                 success: function (result) {
-                    RefreshList(result);
+                    if (result !== null) {
+                        localStorage["todos"] = JSON.stringify(result);
+                        RefreshList(result);
+                    }
                 }
             });
         };
 
+        function filter(type) {
+            var list = JSON.parse(localStorage['todos']);
+            switch (type) {
+                case 'all':
+                    RefreshList(list);
+                    break;
+                case 'active':
+                    RefreshList(list.filter(x => x.IsComplete === false));
+                    break;
+                case 'completed':
+                    RefreshList(list.filter(x => x.IsComplete === true));
+                    break;
+                default:
+                    break;
+            }
+        }
+
         function RefreshList(data) {
-            var todoList = $("#todoList");
-            todoList.empty();
-            data.forEach(function (value, index) {
-                var checked = value.IsComplete === true ? "checked" : "";
-                var content = value.Content;
-                var style = value.IsComplete === true ? "completed" : "";
-                todoList.append('<li class="' + style + '">\
-                                   <div class="view" >\
-                                     <input type="hidden" value="'+ value._id +'">\
-                                     <input class="toggle" type="checkbox" ' + checked + '>\
-                                     <label>' + content + '</label>\
-                                     <button class="destroy" onclick="Remove('+ value._id +')"></button>\
-                                   </div>\
-                                   <input class="edit" value="Create a TodoMVC template">\
-                                 </li>');
+            if (localStorage["todos"] !== null && localStorage["todos"] !== undefined) {
+                var todoList = $("#todoList");
+                todoList.empty();
+                data.forEach(function (value, index) {
+                    var checked = value.IsComplete === true ? "checked" : "";
+                    var content = value.Content;
+                    var style = value.IsComplete === true ? "completed" : "";
+                    todoList.append('<li class="' + style + '" data-id='+ value._id +'>\
+                                        <div class="view" >\
+                                           <input type="hidden" value="'+ value._id + '">\
+                                           <input class="toggle" type="checkbox" ' + checked + ' data-id='+ value._id +'>\
+                                           <label>' + content + '</label>\
+                                           <button class="destroy" data-id='+ value._id +'></button>\
+                                        </div>\
+                                        <input class="edit" value="'+ content +'">\
+                                     </li>');
+                });
+            }
+
+            RefreshElement();
+        }
+
+        function RefreshElement() {
+            var data = JSON.parse(localStorage["todos"]);
+
+            $("span[class=todo-count] strong").text(data.filter(x => x.IsComplete === true).length);
+            if (data.filter(x=>x.IsComplete === false).length > 0) {
+                $("input[type=checkbox][class=toggle-all]").removeProp("checked");
+            }
+            else {
+                $("input[type=checkbox][class=toggle-all]").prop("checked", true);
+            }
+
+            if (data.filter(x=>x.IsComplete === true).length > 0) {
+                $("button[class=clear-completed]").removeProp("hidden");
+            }
+            else {
+                $("button[class=clear-completed]").prop("hidden", true);
+            }
+        }
+
+        var addUrl = '@Url.Action("Add", "Todo")';
+        function Add(value) {
+            $.ajax({
+                url: addUrl,
+                data: { value: value },
+                success: function (result) {
+                    GetTodos();
+                }
             });
         }
 
@@ -115,7 +235,30 @@
                 url: removeUrl,
                 data: { _id: _id },
                 success: function (result) {
-                    RefreshList(result);
+                    GetTodos();
+                }
+            });
+        }
+
+        var removeCompletedUrl = '@Url.Action("DeleteCompleted", "Todo")';
+        var RemoveCompleted = function () {
+            $.ajax({
+                url: removeCompletedUrl,
+                success: function (result) {
+                    GetTodos();
+                }
+            });
+        };
+
+        var editUrl = '@Url.Action("Edit", "Todo")';
+        function Edit() {
+            $.ajax({
+                type: "POST",
+                url: editUrl,
+                dataType: "json",
+                data: { todos: JSON.parse(localStorage["todos"]) },
+                success: function (result) {
+                    GetTodos();
                 }
             });
         }

@@ -18,27 +18,31 @@ namespace TodoMVC.Controllers
             return View();
         }
 
-        public ActionResult GetTodos(bool? status)
+        public ActionResult GetTodos()
         {
-            var data = todoService.GetTodos(status);
+            var data = todoService.GetTodos();
             return Json(data, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult Add()
+        public bool Add(string value)
         {
-            return View();
+            return todoService.Add(value);
         }
 
-        public ActionResult Edit()
+        [HttpPost]
+        public bool Edit(IEnumerable<Todo> todos)
         {
-            return View();
+            return todoService.Edit(todos);
         }
 
-        public ActionResult Delete(int _id)
+        public bool Delete(int _id)
         {
+            return todoService.Delete(_id);
+        }
 
-            var data = todoService.GetTodos(null);
-            return Json(data, JsonRequestBehavior.AllowGet);
+        public bool DeleteCompleted()
+        {
+            return todoService.DeleteCompleted();
         }
     }
 }
